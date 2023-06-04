@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.jxc.dao.SupplierMapper">
+    <sql id="supplierMap">
+        supplier_id
+        supplierId, supplier_name supplierName, contacts contacts, phone_number phoneNumber, address address, remarks remarks
+    </sql>
+
+    <insert id="saveSupplier" parameterType="com.atguigu.jxc.entity.Supplier">
+        insert into t_supplier(supplier_name, contacts, phone_number, address, remarks)
+            value (#{supplier.supplierName},#{supplier.contacts},#{supplier.phoneNumber},#{supplier.address},#{supplier.remarks})
+    </insert>
+
+    <update id="updateSupplier">
+        update t_supplier
+        set supplier_name=#{supplier.supplierName},
+            contacts=#{supplier.contacts},
+            phone_number=#{supplier.phoneNumber},
+            address=#{supplier.address},
+            remarks=#{supplier.remarks}
+        where supplier_id = #{supplierId}
+    </update>
+
+    <delete id="deleteSupplierBatch" parameterType="list">
+        delete from t_supplier
+where supplier_id in
+        <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="queryAllSupplier" resultType="com.atguigu.jxc.entity.Supplier">
+        select
+        <include refid="supplierMap"></include>
+        from t_supplier
+        <where>
+            <if test="supplierName!=null and supplierName!=''">
+                supplier_name=#{supplierName}
+            </if>
+        </where>
+    </select>
+</mapper>
