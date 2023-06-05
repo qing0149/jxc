@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.jxc.dao.CustomerMapper">
+    <insert id="saveCustomer" parameterType="com.atguigu.jxc.entity.Customer">
+        insert into t_customer(customer_name, contacts, phone_number, address, remarks)
+            value (#{customer.customerName},#{customer.contacts},#{customer.phoneNumber},#{customer.address},#{customer.remarks})
+    </insert>
+    <update id="updateByCustomer">
+        update t_customer
+        set customer_name=#{customer.customerName},
+            contacts=#{customer.contacts},
+            phone_number=#{customer.phoneNumber},
+            address=#{customer.address},
+            remarks=#{customer.remarks}
+        where customer_id = #{customerId}
+    </update>
+    <delete id="deleteByIds">
+        delete from t_customer
+        <where>
+            customer_id in
+            <foreach collection="idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+    </delete>
+    <select id="queryCustomerList" resultType="com.atguigu.jxc.entity.Customer">
+        select customer_id customerId, customer_name customerName, contacts contacts,
+        phone_number phoneNumber, address address, remarks remarks
+        from t_customer
+        <where>
+            <if test="customerName!=null and customerName!=''">
+                customer_name like concat('%',#{customerName},'%')
+            </if>
+        </where>
+        limit #{page},#{limit}
+    </select>
+</mapper>

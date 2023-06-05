@@ -4,11 +4,6 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.atguigu.jxc.dao.GoodsDao">
-
-    <select id="getMaxCode" resultType="java.lang.String">
-        SELECT MAX(goods_code)
-        FROM t_goods
-    </select>
     <sql id="goodMap">
         tg
         .
@@ -29,9 +24,72 @@
                tg.goods_type_id      as goodsTypeId,
                goods_type_name       as goodsTypeName
     </sql>
+    <sql id="goods">
+        goods_id
+        as goodsId,
+               goods_code         as goodsCode,
+               goods_name         as goodsName,
+               inventory_quantity    as inventoryQuantity,
+               last_purchasing_price as lastPurchasingPrice,
+               min_num               as minNum,
+               goods_model        as goodsModel,
+               goods_producer        as goodsProducer,
+               purchasing_price      as purchasingPrice,
+               remarks               as remarks,
+               selling_price         as sellingPrice,
+               state                 as state,
+               goods_unit         as goodsUnit,
+               goods_type_id      as goodsTypeId
+    </sql>
+    <insert id="saveGoods" parameterType="com.atguigu.jxc.entity.Goods">
+        insert into t_goods(goods_code, goods_name, inventory_quantity,
+                            min_num, goods_model, goods_producer, purchasing_price,
+                            last_purchasing_price, remarks, selling_price,
+                            state, goods_unit, goods_type_id)
+            value (#{goods.goodsCode},#{goods.goodsName},#{goods.inventoryQuantity},
+            #{goods.minNum},#{goods.goodsModel},#{goods.goodsProducer},#{goods.purchasingPrice},
+            #{goods.lastPurchasingPrice},#{goods.remarks},#{goods.sellingPrice},
+            #{goods.state},#{goods.goodsUnit},#{goods.goodsTypeId})
+    </insert>
+    <delete id="deleteGoodsById">
+        delete
+        from t_goods
+        where goods_id = #{goods_id}
+    </delete>
+    <update id="updateGoods" parameterType="com.atguigu.jxc.entity.Goods">
+        update t_goods
+        set goods_code=#{goods.goodsCode},
+            goods_name=#{goods.goodsName},
+            min_num=#{goods.minNum},
+            goods_model=#{goods.goodsModel},
+            goods_producer=#{goods.goodsProducer},
+            last_purchasing_price=#{goods.lastPurchasingPrice},
+            purchasing_price=#{goods.purchasingPrice},
+            remarks=#{goods.remarks},
+            selling_price=#{goods.sellingPrice},
+            goods_unit=#{goods.goodsUnit},
+            goods_type_id=#{goods.goodsTypeId}
+        where goods_id = #{goods.goodsId}
+
+    </update>
+    <update id="saveOrUpdateStock">
+        update t_goods
+        <trim prefix="set" suffixOverrides=",">
+            <if test="inventoryQuantity!=null">
+                inventory_quantity=#{inventoryQuantity},
+            </if>
+            <if test="purchasingPrice!=null">
+                purchasing_price=#{purchasingPrice}
+            </if>
+        </trim>
+        where goods_id = #{goodsId}
+    </update>
+    <select id="getMaxCode" resultType="java.lang.String">
+        SELECT MAX(goods_code)
+        FROM t_goods
+    </select>
     <select id="queryGoodsPages" resultType="com.atguigu.jxc.entity.Goods">
         select
-        distinct
         <include refid="goodMap"></include>
         from t_goods tg
         left join t_goods_type tgt
@@ -41,21 +99,89 @@
                 and tg.goods_code=#{codeOrName} or tg.goods_name like concat('%',#{codeOrName},'%')
             </if>
             <if test="goodsTypeId!=null">
-                and tg.goods_type_id=#{goodsTypeId}
+                and tg.goods_type_id in
+                #{goodsTypeId}
             </if>
         </where>
         limit #{page},#{rows}
     </select>
-
-
     <select id="selectSaleTotal" resultType="com.atguigu.jxc.dto.SaleTotalMap">
         select goods_id as goodsId, sum(goods_num) as saleTotal
         from t_sale_list_goods
         group by goods_id, goods_code;
     </select>
     <select id="queryAllUnitList" resultType="com.atguigu.jxc.dto.GoodsUnit">
-        select goods_id unitId, goods_unit unitName
+        select unit_id unitId, unit_name unitName
+        from t_unit
+    </select>
+    <select id="selectGoodsByGoodsId" resultType="com.atguigu.jxc.entity.Goods">
+        select
+        <include refid="goods"></include>
         from t_goods
+        where goods_id=#{goodsId}
     </select>
 
+    <select id="searchPurchaseListGoods" resultType="com.atguigu.jxc.entity.PurchaseListGoods">
+        select purchase_list_goods_id purchaseListGoodsId,
+               goods_id               goodsId,
+               goods_code             goodsCode,
+               goods_name             goodsName,
+               goods_model            goodsModel,
+               goods_unit             goodsUnit,
+               goods_num              goodsNum,
+               price                  price,
+               total                  total,
+               purchase_list_id       purchaseListId,
+               goods_type_id          goodsTypeId
+        from t_purchase_list_goods
+        where goods_id = #{goodsId}
+    </select>
+    <select id="searchStateByPurchaseList" resultType="com.atguigu.jxc.entity.PurchaseList">
+        select *
+        from t_purchase_list
+        where purchase_list_id = #{purchaseListId}
+    </select>
+    <select id="queryGoodsPagesByTypes" resultType="com.atguigu.jxc.entity.Goods">
+        select
+        <include refid="goodMap"></include>
+        from t_goods tg
+        left join t_goods_type tgt
+        on tg.goods_type_id = tgt.goods_type_id
+        <where>
+            <if test="goodsName!=null and !goodsName.trim().equals('')">
+                and goods_name like concat('%',#{goodsName},'%')
+            </if>
+            <if test="goodTypeIds!=null and goodTypeIds.size()>0">
+                and tg.goods_type_id in
+                <foreach collection="goodTypeIds" item="goodTypeId" open="(" separator="," close=")">
+                    #{goodTypeId}
+                </foreach>
+            </if>
+        </where>
+        limit #{page},#{limit}
+    </select>
+    <select id="getNoInventoryQuantity" resultType="com.atguigu.jxc.entity.Goods">
+        select
+        <include refid="goods"></include>
+        from t_goods
+        <where>inventory_quantity=0
+            <if test="nameOrCode!=null and nameOrCode!=''">
+                and goods_name like concat('%',#{nameOrCode},'%')
+                or goods_code=#{nameOrCode}
+            </if>
+        </where>
+        limit #{page},#{limit}
+    </select>
+    <select id="getInventoryQuantity" resultType="com.atguigu.jxc.entity.Goods">
+        select
+        <include refid="goods"></include>
+        from t_goods
+        <where>
+            inventory_quantity!=0
+            <if test="nameOrCode!=null and nameOrCode!=''">
+                and goods_name like concat('%',#{nameOrCode},'%')
+                or goods_code=#{nameOrCode}
+            </if>
+        </where>
+    </select>
 </mapper>

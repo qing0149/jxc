@@ -6,14 +6,21 @@ import com.atguigu.jxc.domain.SuccessCode;
 import com.atguigu.jxc.dto.GoodsUnit;
 import com.atguigu.jxc.dto.SaleTotalMap;
 import com.atguigu.jxc.entity.Goods;
+import com.atguigu.jxc.entity.GoodsType;
+import com.atguigu.jxc.entity.PurchaseList;
+import com.atguigu.jxc.entity.PurchaseListGoods;
 import com.atguigu.jxc.service.GoodsService;
+import com.atguigu.jxc.service.GoodsTypeService;
+import com.atguigu.jxc.util.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -25,6 +32,8 @@ public class GoodsServiceImpl implements GoodsService {
 
     @Resource
     private GoodsDao goodsDao;
+    @Autowired
+    private GoodsTypeService goodsTypeService;
 
     @Override
     public ServiceVO getCode() {
@@ -74,5 +83,51 @@ public class GoodsServiceImpl implements GoodsService {
         HashMap<String, Object> map = new HashMap<>();
         map.put("rows", goodsUnits);
         return map;
+    }
+
+    @Override
+    public void saveOrUpdateGoods(Goods goods) {
+        Integer goodsId = goods.getGoodsId();
+        if (goodsId != null) {
+            goodsDao.updateGoods(goods);
+        } else {
+            goods.setInventoryQuantity(0);
+            goods.setState(0);
+            goodsDao.saveGoods(goods);
+        }
+    }
+
+    @Override
+    public void deleteGoodsByGoodsId(Integer goodsId) {
+        Goods goods = goodsDao.selectGoodsByGoodsId(goodsId);
+        if (goods != null && goods.getState() == 0) {
+            goodsDao.deleteGoodsById(goodsId);
+        }
+    }
+
+    @Override
+    public ArrayList<Goods> queryGoodsList(PageUtil pageUtil, String goodsName, Integer goodsTypeId) {
+        // if (goodsTypeId==null){
+        //
+        // }else {
+        ArrayList<GoodsType> goodsTypeIds = goodsTypeService.queryAllGoodsTypeIds(goodsTypeId);
+        List<Integer> goodTypeIds = goodsTypeIds.stream().map(GoodsType::getGoodsTypeId).collect(Collectors.toList());
+        return goodsDao.queryGoodsPagesByTypes(pageUtil.getPage(), pageUtil.getLimit(), goodsName, goodTypeIds);
+    }
+
+    @Override
+    public List<Goods> getNoInventoryQuantity(PageUtil pageUtil, String nameOrCode) {
+        List<Goods> goods = goodsDao.getNoInventoryQuantity(pageUtil.getPage(), pageUtil.getLimit(), nameOrCode);
+        return goods;
+    }
+
+    @Override
+    public List<Goods> getInventoryQuantity(PageUtil pageUtil, String nameOrCode) {
+        List<Goods> goods = goodsDao.getInventoryQuantity(pageUtil.getPage(), pageUtil.getLimit(), nameOrCode);
+        return goods;
+    }
+    @Override
+    public void saveOrUpdateStock(Integer goodsId, Integer inventoryQuantity, BigDecimal purchasingPrice) {
+        goodsDao.saveOrUpdateStock(goodsId, inventoryQuantity, purchasingPrice);
     }
 }
