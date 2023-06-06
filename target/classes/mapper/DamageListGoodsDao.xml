@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.jxc.dao.DamageListGoodsDao">
+    <insert id="saveDamageListDao" useGeneratedKeys="true" keyProperty="damageList.damageListId"
+            keyColumn="damage_list_id">
+        insert into t_damage_list
+            (damage_number, damage_date, remarks, user_id)
+            value (#{damageList.damageNumber},#{damageList.damageDate},#{damageList.remarks},#{damageList.userId})
+    </insert>
+    <!-- 返回自动生成的主键值 -->
+    <!--        <selectKey keyProperty="id" resultType="java.lang.Integer" order="AFTER">-->
+    <!--            select last_insert_id()-->
+    <!--        </selectKey>-->
+    <insert id="saveDamageListGoodsDao">
+        insert into t_damage_list_goods(goods_id,
+                                        goods_code,
+                                        goods_name,
+                                        goods_model,
+                                        goods_unit,
+                                        goods_num,
+                                        price,
+                                        total,
+                                        damage_list_id,
+                                        goods_type_id)
+            value (#{damageListGoods.goodsId},#{damageListGoods.goodsCode},#{damageListGoods.goodsName},
+            #{damageListGoods.goodsModel},#{damageListGoods.goodsUnit},#{damageListGoods.goodsNum},
+            #{damageListGoods.price},#{damageListGoods.total},#{damageListGoods.damageListId},
+            #{damageListGoods.goodsTypeId})
+    </insert>
+    <select id="queryDamageListByDamageListId" resultType="com.atguigu.jxc.entity.DamageListGoods">
+        select *
+        from t_damage_list_goods
+        where damage_list_id = #{damageListId}
+    </select>
+    <select id="queryDamageList" resultType="com.atguigu.jxc.entity.DamageList">
+        select *
+        from t_damage_list
+    </select>
+
+</mapper>

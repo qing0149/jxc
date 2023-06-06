@@ -126,8 +126,17 @@ public class GoodsServiceImpl implements GoodsService {
         List<Goods> goods = goodsDao.getInventoryQuantity(pageUtil.getPage(), pageUtil.getLimit(), nameOrCode);
         return goods;
     }
+
     @Override
     public void saveOrUpdateStock(Integer goodsId, Integer inventoryQuantity, BigDecimal purchasingPrice) {
         goodsDao.saveOrUpdateStock(goodsId, inventoryQuantity, purchasingPrice);
+    }
+
+    @Override
+    public List<Goods> getListAlarm() {
+        List<Goods> goodsList = goodsDao.queryAllGoods();
+        goodsList = goodsList.stream().filter(goods ->
+                goods.getInventoryQuantity() < goods.getMinNum()).collect(Collectors.toList());
+        return goodsList;
     }
 }

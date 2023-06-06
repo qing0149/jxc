@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * @description 生成图片验证码
  */
-@Controller
+// @Controller
 public class DrawImageController {
 
     @Autowired

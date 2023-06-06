@@ -149,6 +149,7 @@ public class GoodsController {
 
     /**
      * 添加商品期初库存
+     *
      * @param goodsId           商品ID
      * @param inventoryQuantity 库存
      * @param purchasingPrice   成本价
@@ -170,7 +171,15 @@ public class GoodsController {
 
     /**
      * 查询库存报警商品信息
+     *
      * @return
      */
+    @PostMapping("/listAlarm")
+    public Map<String, Object> getListAlarm() {
+        List<Goods> goodsList = goodsService.getListAlarm();
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("rows", goodsList);
+        return map;
+    }
 
 }

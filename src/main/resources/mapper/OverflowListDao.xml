@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.jxc.dao.OverflowListDao">
+
+    <insert id="saveOverFlowList" useGeneratedKeys="true" keyProperty="overflowList.overflowListId"
+            keyColumn="overflow_list_id">
+        insert into t_overflow_list(overflow_number, overflow_date, remarks, user_id)
+        values (#{overflowList.overflowNumber}, #{overflowList.overflowDate}, #{overflowList.remarks},
+                #{overflowList.userId})
+    </insert>
+    <select id="queryAllOverFlowList" resultType="com.atguigu.jxc.entity.OverflowList">
+        select *
+        from t_overflow_list
+    </select>
+    <select id="getGoodsListByOverflowListId" resultType="com.atguigu.jxc.entity.OverflowListGoods">
+        select *
+        from t_overflow_list_goods
+        where overflow_list_id = #{overflowListId}
+    </select>
+</mapper>

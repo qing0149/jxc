@@ -33,4 +33,6 @@ public interface GoodsService {
     List<Goods> getInventoryQuantity(PageUtil pageUtil, String nameOrCode);
 
     void saveOrUpdateStock(Integer goodsId, Integer inventoryQuantity, BigDecimal purchasingPrice);
+
+    List<Goods> getListAlarm();
 }

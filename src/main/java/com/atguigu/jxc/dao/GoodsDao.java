@@ -65,4 +65,6 @@ public interface GoodsDao {
     void saveOrUpdateStock(@Param(value = "goodsId") Integer goodsId,
                            @Param(value = "inventoryQuantity") Integer inventoryQuantity,
                            @Param(value ="purchasingPrice" ) BigDecimal purchasingPrice);
+
+    List<Goods> queryAllGoods();
 }
